@@ -1,7 +1,7 @@
 #ifndef FC_VALIDATE_H
 #define FC_VALIDATE_H
-#include "/opt/Xilinx/Vivado/2018.1/include/gmp.h"
-#include "/opt/Xilinx/Vivado/2018.1/include/mpfr.h"
+#include "/tools/Xilinx/Vivado/2018.3/include/gmp.h"
+#include "/tools/Xilinx/Vivado/2018.3/include/mpfr.h"
 #include "ap_fixed.h"
 
 class fc_validate

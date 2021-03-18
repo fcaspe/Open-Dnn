@@ -1,10 +1,10 @@
 #ifndef _CONSTRUCT_NET_H_
 #define _CONSTRUCT_NET_H_
 
-//#include "/opt/Xilinx/Vivado/2018.1/include/mpfr.h"
-//#include "/opt/Xilinx/Vivado/2018.1/include/gmp.h"
-//#include "/opt/Xilinx/Vivado/2018.1/include/mpfr.h"
-//#include "/opt/Xilinx/Vivado/2018.1/include/gmp.h"
+//#include "/tools/Xilinx/Vivado/2018.3/include/mpfr.h"
+//#include "/tools/Xilinx/Vivado/2018.3/include/gmp.h"
+//#include "/tools/Xilinx/Vivado/2018.3/include/mpfr.h"
+//#include "/tools/Xilinx/Vivado/2018.3/include/gmp.h"
 
 #include "config.h"
 #include <iostream>

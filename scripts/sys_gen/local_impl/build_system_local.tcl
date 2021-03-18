@@ -20,7 +20,7 @@ set script_folder [_tcl::get_script_folder]
 ################################################################
 # Check if script is running in correct Vivado version.
 ################################################################
-set scripts_vivado_version 2018.1
+set scripts_vivado_version 2018.3
 set current_vivado_version [version -short]
 
 if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
@@ -50,11 +50,11 @@ if { $list_projs eq "" } {
 
 # CHANGE DESIGN NAME HERE
 variable design_name
-set design_name design_1
+set design_name cloud_dnn_alexnet
 
 # If you do not already have an existing IP Integrator design open,
 # you can create a design using the following command:
-#    create_bd_design $design_name
+#create_bd_design $design_name
 
 # Creating design if needed
 set errMsg ""
@@ -129,10 +129,25 @@ set bCheckIPsPassed 1
 ##################################################################
 # CHECK IPs
 ##################################################################
+
+# Update IP repository with generated IP
+set ip_sub_net_0 "../../hls_proj/ip_gen/sub_net_0/impl/ip/xilinx_com_hls_sub_net_0_1_0.zip"
+set ip_sub_net_1 "../../hls_proj/ip_gen/sub_net_1/impl/ip/xilinx_com_hls_sub_net_1_1_0.zip"
+set ip_sub_net_2 "../../hls_proj/ip_gen/sub_net_2/impl/ip/xilinx_com_hls_sub_net_2_1_0.zip"
+set ip_lib "./myproj/ip_lib"
+
+file mkdir $ip_lib
+set_property ip_repo_paths $ip_lib [current_project]
+update_ip_catalog
+update_ip_catalog -add_ip $ip_sub_net_0 -repo_path $ip_lib
+update_ip_catalog -add_ip $ip_sub_net_1 -repo_path $ip_lib
+update_ip_catalog -add_ip $ip_sub_net_2 -repo_path $ip_lib
+
+
 set bCheckIPs 1
 if { $bCheckIPs == 1 } {
    set list_check_ips "\ 
-xilinx.com:ip:axi_bram_ctrl:4.0\
+xilinx.com:ip:axi_bram_ctrl:4.1\
 xilinx.com:ip:axi_register_slice:2.1\
 xilinx.com:ip:blk_mem_gen:8.4\
 xilinx.com:ip:ddr4:2.2\
@@ -228,7 +243,7 @@ proc create_root_design { parentCell } {
  ] $reset
 
   # Create instance: axi_bram_ctrl_0, and set properties
-  set axi_bram_ctrl_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_bram_ctrl:4.0 axi_bram_ctrl_0 ]
+  set axi_bram_ctrl_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_bram_ctrl:4.1 axi_bram_ctrl_0 ]
   set_property -dict [ list \
    CONFIG.DATA_WIDTH {512} \
    CONFIG.ECC_TYPE {0} \
@@ -236,7 +251,7 @@ proc create_root_design { parentCell } {
  ] $axi_bram_ctrl_0
 
   # Create instance: axi_bram_ctrl_1, and set properties
-  set axi_bram_ctrl_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_bram_ctrl:4.0 axi_bram_ctrl_1 ]
+  set axi_bram_ctrl_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_bram_ctrl:4.1 axi_bram_ctrl_1 ]
   set_property -dict [ list \
    CONFIG.DATA_WIDTH {512} \
    CONFIG.ECC_TYPE {0} \
@@ -244,7 +259,7 @@ proc create_root_design { parentCell } {
  ] $axi_bram_ctrl_1
 
   # Create instance: axi_bram_ctrl_2, and set properties
-  set axi_bram_ctrl_2 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_bram_ctrl:4.0 axi_bram_ctrl_2 ]
+  set axi_bram_ctrl_2 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_bram_ctrl:4.1 axi_bram_ctrl_2 ]
   set_property -dict [ list \
    CONFIG.DATA_WIDTH {512} \
    CONFIG.ECC_TYPE {0} \
@@ -476,6 +491,7 @@ proc create_root_design { parentCell } {
    CONFIG.MAX_BURST_LENGTH {1} \
  ] [get_bd_intf_pins /sub_net_0_0/s_axi_CRTL_BUS]
 
+
   # Create instance: sub_net_0_1, and set properties
   set sub_net_0_1 [ create_bd_cell -type ip -vlnv xilinx.com:hls:sub_net_1:1.0 sub_net_0_1 ]
 
@@ -486,8 +502,10 @@ proc create_root_design { parentCell } {
    CONFIG.MAX_BURST_LENGTH {1} \
  ] [get_bd_intf_pins /sub_net_0_1/s_axi_CRTL_BUS]
 
+
+ 
   # Create instance: sub_net_0_2, and set properties
-  set sub_net_0_2 [ create_bd_cell -type ip -vlnv xilinx.com:hls:sub_net_1:1.0 sub_net_0_2 ]
+  set sub_net_0_2 [ create_bd_cell -type ip -vlnv xilinx.com:hls:sub_net_2:1.0 sub_net_0_2 ]
 
   set_property -dict [ list \
    CONFIG.SUPPORTS_NARROW_BURST {0} \
@@ -495,6 +513,7 @@ proc create_root_design { parentCell } {
    CONFIG.NUM_WRITE_OUTSTANDING {1} \
    CONFIG.MAX_BURST_LENGTH {1} \
  ] [get_bd_intf_pins /sub_net_0_2/s_axi_CRTL_BUS]
+
 
   # Create instance: util_ds_buf, and set properties
   set util_ds_buf [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.1 util_ds_buf ]
