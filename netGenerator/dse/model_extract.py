@@ -78,6 +78,8 @@ def model_extract(include_fc):
         nn_fc_cut_flag.append(1)
 
     if(include_fc == 'include_fc'):
+        print("[DEBUG] including FC . . . {} {} {} {} {} {}".format(nn_in_number_conv_values1,
+        nn_out_number_conv_values1,nn_fc_sizes_conv,nn_channel_size_conv_values,nn_stride_values1,nn_fc_cut_flag))
         init_conv_N = init_conv_N + nn_in_number_conv_values1
         init_conv_M = init_conv_M + nn_out_number_conv_values1
         init_conv_r = init_conv_r + nn_fc_sizes_conv
@@ -123,14 +125,14 @@ def model_extract(include_fc):
                 flag[count] = True
             count += 1
 
-    # print "conv_N: ", conv_N
-    # print "conv_M: ", conv_M
-    # print "conv_r: ", conv_r
-    # print "conv_R: ", conv_R
-    # print "conv_K: ", conv_K
-    # print "conv_S: ", conv_S
-    # print "flag", flag
-    # print "cut_flag", cut_flag
+    print("conv_N: ", conv_N)
+    print("conv_M: ", conv_M)
+    print("conv_r: ", conv_r)
+    print("conv_R: ", conv_R)
+    print("conv_K: ", conv_K)
+    print("conv_S: ", conv_S)
+    print("flag", flag)
+    print("cut_flag", cut_flag)
 
     return conv_N, conv_M, conv_r, conv_R, conv_K, conv_S, conv_G, flag, cut_flag, init_pool_N
 

@@ -50,4 +50,3 @@ cp ../scripts/sys_gen/aws_impl/* ../gen_proj/impl_proj/aws_impl/
 echo "Files copied"
 echo "Generation done!!!"
 
-exit

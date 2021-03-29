@@ -505,7 +505,7 @@ proc create_root_design { parentCell } {
 
  
   # Create instance: sub_net_0_2, and set properties
-  set sub_net_0_2 [ create_bd_cell -type ip -vlnv xilinx.com:hls:sub_net_2:1.0 sub_net_0_2 ]
+  set sub_net_0_2 [ create_bd_cell -type ip -vlnv xilinx.com:hls:sub_net_1:1.0 sub_net_0_2 ]
 
   set_property -dict [ list \
    CONFIG.SUPPORTS_NARROW_BURST {0} \

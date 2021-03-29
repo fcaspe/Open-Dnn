@@ -80,9 +80,9 @@ def multiAcc_dse():
     """
     step 1: extract model from txt file with parameter no_include_fc / include_fc
     """
-    conv_N, conv_M, conv_r, conv_R, conv_K, conv_S, conv_G, flag, cut_flag, pool_N = model_extract('no_include_fc')
-    # print("Extracted cut flag: ", cut_flag)
-    # print("Extracted pool flag:", flag)
+    conv_N, conv_M, conv_r, conv_R, conv_K, conv_S, conv_G, flag, cut_flag, pool_N = model_extract('include_fc')
+    print("Extracted cut flag: ", cut_flag)
+    print("Extracted pool flag:", flag)
     OPs = gop_calculate(conv_N, conv_M, conv_R, conv_K)
     max_layerout = max_layer_dataout(conv_N, conv_M, conv_R, conv_K)
 
@@ -127,8 +127,8 @@ def multiAcc_dse():
     print_line("Best Configuration Search")
     overall_start = time.time()
     # acc_cluster_num = 3
-    # pair_list, item_list, gop_list, util_list = global_search(layer_list, acc_cluster_num, conv_N, conv_M, conv_r, conv_R, conv_K, conv_S, flag, overall_lat)
-    # pair_list, gop_list, util_list = per_die_config_dse_multiAcc(sub_conv_N, sub_conv_M, sub_conv_r, sub_conv_R, sub_conv_K,
+    #pair_list, item_list, gop_list, util_list = global_search(layer_list, acc_cluster_num, conv_N, conv_M, conv_r, conv_R, conv_K, conv_S, flag, overall_lat)
+    #pair_list, gop_list, util_list = per_die_config_dse_multiAcc(sub_conv_N, sub_conv_M, sub_conv_r, sub_conv_R, sub_conv_K,
                                                               # sub_conv_S, sub_flag)
     pair_list = per_die_config_dse_multiAcc_flex(sub_conv_N, sub_conv_M, sub_conv_r, sub_conv_R, sub_conv_K, sub_conv_S, sub_flag)
 

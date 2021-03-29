@@ -45,7 +45,45 @@ int main()
 	print_para_list(para_list);
 	conv_validate conv_test(para_list);
 
+    /* Run test: Output of one layer is the input of the next layer */
+	sub_net_0(
+			para_list,						//ap_uint<32> param_port[528],
+			//conv_test.bias,					//ap_fixed<32,26> bias_in[1024],
+			conv_test.weight,				//data_type_itf weight_in[2048],
+			conv_test.input_feature,	    //data_type_itf data_in_0[2048],
+			data_temp,						//data_type_itf data_out_0[2048],
+			data_temp,						//data_type_itf data_in_1[2048],
+			//conv_test.output_feature,	    //data_type_itf data_out_1[2048],
+			data_temp2,
+			0								//int select
+			);
 
+
+	sub_net_1(
+			para_list,						//ap_uint<32> param_port[528],
+			//conv_test.                    //ap_fixed<32,26> bias_in[1024],
+			conv_test.weight,				//data_type_itf weight_in[2048],
+			data_temp2,                     //data_type_itf data_in_0[2048],
+			//data_temp,					//data_type_itf data_out_0[2048],
+			//data_temp,					//data_type_itf data_in_1[2048],
+			data_temp3,//conv_test.output_feature,	    //data_type_itf data_out_1[2048],
+			1								//int select
+			);
+
+
+	sub_net_2(
+			para_list,						//ap_uint<32> param_port[528],
+			//conv_test.bias,					//ap_fixed<32,26> bias_in[1024],
+			conv_test.weight,				//data_type_itf weight_in[2048],
+			data_temp3,	    //data_type_itf data_in_0[2048],
+			data_temp4,						//data_type_itf data_out_0[2048],
+			data_temp5,						//data_type_itf data_in_1[2048],
+			data_temp5,//conv_test.output_feature,	    //data_type_itf data_out_1[2048],
+			0								//int select
+			);
+
+/*
+`   //Original subnet call procedure as presented in repository.
 	sub_net_0(
 			para_list,						//ap_uint<32> param_port[528],
 			//conv_test.bias,					//ap_fixed<32,26> bias_in[1024],
@@ -58,7 +96,7 @@ int main()
 			0								//int select
 			);
 
-/*
+
 	sub_net_1(
 			para_list,						//ap_uint<32> param_port[528],
 			//conv_test.bias,					//ap_fixed<32,26> bias_in[1024],
