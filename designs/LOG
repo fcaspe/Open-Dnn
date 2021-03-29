@@ -1,0 +1,6 @@
+alexnet_v2: First complete synthesis with no FC. Closes timing at 100MHz.
+For original CloudDnn VU118P board
+
+alexnet_v3: Testing with FC network added. Accelerator parameters resemble
+to the published by the paper. (just the first accelerator is different.)
+It fails routing, so we have only synthesis reports. It utilizes 90% of DSPs.
