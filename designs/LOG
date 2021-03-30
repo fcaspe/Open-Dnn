@@ -4,3 +4,6 @@ For original CloudDnn VU118P board
 alexnet_v3: Testing with FC network added. Accelerator parameters resemble
 to the published by the paper. (just the first accelerator is different.)
 It fails routing, so we have only synthesis reports. It utilizes 90% of DSPs.
+
+alexnet_v4: Same design as v3, but it implements correctly, as we instantiate
+pblocks on each die to assign it to each subnet.
