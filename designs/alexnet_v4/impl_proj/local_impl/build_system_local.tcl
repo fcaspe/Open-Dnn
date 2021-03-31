@@ -714,7 +714,7 @@ proc create_root_design { parentCell } {
 }
 # End of create_root_design()
 
-proc create_and_assign_pblocks {} {
+proc create_and_assign_pblocks { design_name } {
   open_run synth_1 -name synth_1
   # draw pblock slr0
   startgroup 
@@ -736,15 +736,24 @@ proc create_and_assign_pblocks {} {
 
   # add subnets
   add_cells_to_pblock pblock_slr0 [get_cells [list ${design_name}_i/sub_net_0_0]] -clear_locs
+  add_cells_to_pblock pblock_slr0 [get_cells [list ${design_name}_i/blk_mem_gen_0]] -clear_locs
+  add_cells_to_pblock pblock_slr0 [get_cells [list ${design_name}_i/blk_mem_gen_1]] -clear_locs
+
   add_cells_to_pblock pblock_slr1 [get_cells [list ${design_name}_i/sub_net_0_1]] -clear_locs
+  add_cells_to_pblock pblock_slr1 [get_cells [list ${design_name}_i/blk_mem_gen_2]] -clear_locs
+  add_cells_to_pblock pblock_slr1 [get_cells [list ${design_name}_i/blk_mem_gen_3]] -clear_locs
+
   add_cells_to_pblock pblock_slr2 [get_cells [list ${design_name}_i/sub_net_0_2]] -clear_locs
+  add_cells_to_pblock pblock_slr2 [get_cells [list ${design_name}_i/blk_mem_gen_4]] -clear_locs
+  add_cells_to_pblock pblock_slr2 [get_cells [list ${design_name}_i/blk_mem_gen_5]] -clear_locs
+
 }
 
 ##################################################################
 # MAIN FLOW
 ##################################################################
 set num_threads 32
-
+add_cells_to_pblock pblock_slr0 [get_cells [list ${design_name}_i/blk_mem_gen_0]] -clear_locs
 create_root_design ""
 
 make_wrapper -files \
@@ -756,7 +765,7 @@ update_compile_order -fileset sim_1
 launch_runs synth_1 -jobs $num_threads
 wait_on_run synth_1
 
-create_and_assign_pblocks
+create_and_assign_pblocks $design_name
 
 # Run bistream generation on 32 threads with performance oriented P&R strategy
 launch_runs impl_1 -to_step write_bitstream -jobs $num_threads
@@ -768,5 +777,3 @@ if {[file exist $proj_path/$proj_name.runs/impl_1/${proj_name}_wrapper.bit]} {
   file copy -force $proj_path/$proj_name.runs/impl_1/${proj_name}_wrapper.bit \
     $proj_path/export/$design_name.bit
 }
-
-
