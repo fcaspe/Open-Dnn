@@ -69,6 +69,7 @@ public:
             int N ) {
         Itf data_tmp = 0;
         int z0 = n/32;
+        cout << "[DEBUG] limits - z " << n/32 << "-" << (n+Tn-1)/32 << " j " << r * S - P << "-" << (r + Tr - 1) * S + K - P << " k " << c * S - P << "-" << (c + Tc -1) * S + K - P << endl;
         for (int z = n/32; z <= (n+Tn-1)/32; z++) {
             for (int j = r * S - P; j < (r + Tr - 1) * S + K - P ; j++) {
                 for (int k = c * S - P; k < (c + Tc -1) * S + K - P; k++) {
@@ -79,8 +80,12 @@ public:
     						buf[wr][j - r * S + P][k - c * S + P] = T(0);
     					}
     				} else {
-    					data_tmp = *(i_data + in_offset + z * R_IN * C_IN + j * R_IN + k);
-    					for (int wr = 0; wr < Tn; wr++) {
+    					data_tmp = *(i_data + in_offset + z * R_IN * C_IN + j * R_IN + k); /*z= relative to CH dimension. j=relative to R dimension, k = relative to C dimension*/
+                        //cout << "[DEBUG] in_offset: " << in_offset << " z: " << z << " j: " << j << " k: " << k << endl;
+                        //cout << "[DEBUG] reading offset: " << in_offset + z * R_IN * C_IN + j * R_IN + k << endl;
+    					
+                        /*Load data from 512 word bus to buffer*/
+                        for (int wr = 0; wr < Tn; wr++) {
 #pragma HLS UNROLL
     						if(z==z0) {
     							if((n%32+wr)<32)
@@ -166,7 +171,8 @@ public:
 
     		if(inport == 0)
     		{
-    			in_buf_load_axi(buf, i_data, in_offset, n, r, c, S, K, P, R_IN, C_IN, N);
+                cout << "Loading: in_offset: " << in_offset << " n: " << n << " r: " << r << " c: " << c << " S: " << S << " K: " << K << endl;
+                in_buf_load_axi(buf, i_data, in_offset, n, r, c, S, K, P, R_IN, C_IN, N);
 				cout << "input data with i_data!" << endl;
     		}
     		else
