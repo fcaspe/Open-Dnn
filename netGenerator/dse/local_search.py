@@ -33,7 +33,7 @@ def conv_layer_perf(n, m, r, s, k, Tn, Tm, P_const, Tr, Tc):
     N_iter = math.ceil(n / float(Tn))
     lat_read = math.ceil((min(Tn, n)/float(32))) * ((Tr-1)*s + k) * ((Tr-1)*s + k)
     # lat_read = 0
-    lat_w_read = math.ceil(min(Tn, n)/float(32)) * Tm * k * k
+    # lat_w_read = math.ceil(min(Tn, n)/float(32)) * Tm * k * k
 
     # if n == 3:
     #     lat_com = Tr * Tc * math.ceil(k*k)
@@ -84,6 +84,8 @@ def fc_layer_perf(n, m, r, k, Tn, Tm, P_const):
     return tmp
 
 # sub-net performance model function
+# The accelerators in a single die as well as the sub-nets are working in a pipelined manner,
+# so the overall latency is dominated by the maximum latency of a single accelerator in each die.
 def conv_net_perf(N, M, R, S, K, flag, Tn, Tm, P_const, Tr, Tc):
     tmp = 0
     # Tr = 16
@@ -145,6 +147,7 @@ def model_partition_by_gop(conv_N, conv_M, conv_r, conv_R, conv_K, conv_S, conv_
 
 # Optimal Tm, Tn pair selection with given amount of DSP
 def constrained_dse(N, M, r, R, K, S, flag, DSP, P_const, factor, acc_per_die):
+    print("\t\t\t\t[DEBUG] - constrained_dse() starting with with DSP {} - P_const {} - factor {} - acc_per_die {}".format(DSP, P_const, factor, acc_per_die))
     opt_pair = []
     cycle_per_layer = []
     min_local_cycle = 2000000000000
@@ -167,6 +170,12 @@ def constrained_dse(N, M, r, R, K, S, flag, DSP, P_const, factor, acc_per_die):
             for Tn in range(1, Tn_max + 1):
                 # print "Search in Tr range 1 - ", int(math.floor(math.sqrt(Tr_boundary/float(Tm))))
                 local_cycles = conv_net_perf(N, M, R, S, K, flag, Tn, Tm, P_const, Tr, Tr)
+                
+                #tn_tm_factor = int((Tn+Tm)*math.ceil(Tr*Tr/1024))
+                #bram_factor = int(BRAM_bank_total/acc_per_die)
+                #if((Tr == 11 or Tr == 28) and Tm == 96 and Tn == 3):
+                #    print("\t\t\t\t\t[DEBUG] dse - Tn {} - Tm {} - Tr - {} - cycles {} - tm_tn_factor {} - bram_factor {}".format(Tn,Tm,Tr,local_cycles,tn_tm_factor,bram_factor))
+                
                 if local_cycles < min_local_cycle and local_cycles != 0 and (int((Tn+Tm)*math.ceil(Tr*Tr/1024)) < int(BRAM_bank_total/acc_per_die)):
                     min_local_cycle = local_cycles
                     opt_pair = [Tm, Tn, Tr, local_cycles]
@@ -181,7 +190,7 @@ def constrained_dse(N, M, r, R, K, S, flag, DSP, P_const, factor, acc_per_die):
 
     # Acc_num = 1
     # opt_pair.append(Acc_num)
-
+    print("\t\t\t\t[DEBUG] - constrained_dse() finished with opt_pair {}".format(opt_pair))
     return opt_pair, min_local_cycle, cycle_per_layer
 
 
@@ -217,11 +226,12 @@ def per_die_config_dse_multiAcc_flex(sub_conv_N, sub_conv_M, sub_conv_r, sub_con
 
     # i: iterate over each sub-net
     for i in range(0, len(sub_conv_N)):
-        # print "sub_conv_N[" + str(i) + "]: ", sub_conv_N[i]
         min_cycle = sys.maxsize
         min_idx = -1
 
         sub_conv_net_gop = gop_calculate(sub_conv_N[i], sub_conv_M[i], sub_conv_R[i], sub_conv_K[i])
+        print("\t[DEBUG] processing sub_net - sub_conv_N[{}]: {} - sub_conv_M[{}]: {} - sub_conv_r[{}]: {} - TOTAL GOPs = {:0.4f}".format(\
+                                                                            i,sub_conv_N[i],i,sub_conv_M[i],i,sub_conv_r[i],sub_conv_net_gop/1e9))
         cycle_list = []
         pair_list = []
 
@@ -233,6 +243,7 @@ def per_die_config_dse_multiAcc_flex(sub_conv_N, sub_conv_M, sub_conv_r, sub_con
 
             # k: the index to split the sub_conv_N
             for k in split_sub_net(0, len(sub_conv_N[i]), j):
+                print("\t\t[DEBUG] index to split sub_conv_N[{}] : {}".format(i,j))
                 DSP = int(6840/3*0.8)
                 dsp_list = []
                 local_cycle_list = []
@@ -251,7 +262,7 @@ def per_die_config_dse_multiAcc_flex(sub_conv_N, sub_conv_M, sub_conv_r, sub_con
 
                 # -2: illegal setting, pass
                 if k[0] == -2:
-                    print("illegal partitioning of sub-net, passing!")
+                    print("\t\tillegal partitioning of sub-net, passing!")
                     continue
 
                 # -1: only one accelerator
@@ -263,12 +274,12 @@ def per_die_config_dse_multiAcc_flex(sub_conv_N, sub_conv_M, sub_conv_r, sub_con
                     sub_conv_K_new.append(sub_conv_K[i])
                     sub_conv_S_new.append(sub_conv_S[i])
                     sub_flag_new.append(sub_flag[i])
-                    print("sub_conv_N_new: ", sub_conv_N_new)
+                    print("\t\tsub_conv_N_new: ", sub_conv_N_new)
 
                 # else: 2 or 3 accelerators
                 else:
                     zi = list(zip([0] + k, k + [None]))
-                    print("testing zi in python 3.5", zi, len(zi))
+                    print("\t\ttesting zi in python 3.5", zi, len(zi))
                     for idx in range(0, len(zi)):
                         sub_conv_M_new.append(flatten(sub_conv_M[i])[zi[idx][0]:zi[idx][1]])
                         sub_conv_N_new.append(flatten(sub_conv_N[i])[zi[idx][0]:zi[idx][1]])
@@ -277,17 +288,18 @@ def per_die_config_dse_multiAcc_flex(sub_conv_N, sub_conv_M, sub_conv_r, sub_con
                         sub_conv_K_new.append(flatten(sub_conv_K[i])[zi[idx][0]:zi[idx][1]])
                         sub_conv_S_new.append(flatten(sub_conv_S[i])[zi[idx][0]:zi[idx][1]])
                         sub_flag_new.append(flatten(sub_flag[i])[zi[idx][0]:zi[idx][1]])
-                    print("sub_conv_N_new: ", sub_conv_N_new)
+                    print("\t\tsub_conv_N_new: ", sub_conv_N_new)
 
 
                 # m: the mth sub-sub-net in the sub-net
                 temp_pair_list = []
                 acc_layer_task_list = []
                 for m in range(0, len(sub_conv_N_new)):
-                    # print "sub_conv_N_new[" + str(m) + "]: ", sub_conv_N_new[m]
                     sub_net_gop_list.append(gop_calculate(sub_conv_N_new[m], sub_conv_M_new[m], sub_conv_R_new[m], sub_conv_K_new[m]))
                     # allocate_dsp by layer gops
-                    dsp_list.append(math.ceil(DSP * (sub_net_gop_list[m])/sub_conv_net_gop))
+                    total_gops_ratio = sub_net_gop_list[m]/sub_conv_net_gop
+                    dsp_list.append(math.ceil(DSP * total_gops_ratio ))
+                    print("\t\t\tsub_conv_N_new[{}]: {} - GOPs: {:0.4f} ({:0.2f})- DSPs {}".format(m,sub_conv_N_new[m],sub_net_gop_list[m]/1e9,total_gops_ratio,dsp_list[m]))
                     # search best <Tm,Tn> configurations
                     pair, cycle, cycle_per_layer = constrained_dse(sub_conv_N_new[m], sub_conv_M_new[m],
                                                                      sub_conv_r_new[m], sub_conv_R_new[m],
@@ -308,7 +320,9 @@ def per_die_config_dse_multiAcc_flex(sub_conv_N, sub_conv_M, sub_conv_r, sub_con
             if cycle_list[n][2] < min_cycle:
                 min_cycle = cycle_list[n][2]
                 min_idx = n
+        print("\t[DEBUG] cycle_list[min_idx] = {} - pair_list[min_idx] = {}".format(cycle_list[min_idx], pair_list[min_idx]))
         opt_res.append([cycle_list[min_idx], pair_list[min_idx]])
+        print("\t[DEBUG] DONE for sub_net_N[{}]".format(i))
     return opt_res
 
 

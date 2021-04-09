@@ -126,8 +126,10 @@ def subnet_task_analysis(pair_list, acc_task_list, sub_conv_N, sub_conv_M, sub_c
             layer_b = sub_conv_M[i][j]
             # sub_b_num += math.ceil(float(layer_b) / 32)
             sub_w_num += math.ceil(float(layer_b) / 32)
-            layer_w = sub_conv_N[i][j] * sub_conv_M[i][j] * sub_conv_K[i][j] * sub_conv_K[i][j]
-            sub_w_num += math.ceil(float(layer_w)/32)
+            layer_w = sub_conv_M[i][j] * sub_conv_N[i][j] * sub_conv_K[i][j] * sub_conv_K[i][j]
+            layer_w_packed = math.ceil(float(sub_conv_M[i][j])/32) * sub_conv_N[i][j] * sub_conv_K[i][j] * sub_conv_K[i][j]
+            sub_w_num += layer_w_packed
+            print("[DEBUG] sub_net {}-{} - N {} - M {} - K {} - layer_b = {} - layer_w = {} - sub_w_num {}".format(i,j,sub_conv_N[i][j],sub_conv_M[i][j],sub_conv_K[i][j],layer_b,layer_w,sub_w_num))
         data_i = []
         acc_max_i = []
         acc_max_o = []
@@ -137,18 +139,18 @@ def subnet_task_analysis(pair_list, acc_task_list, sub_conv_N, sub_conv_M, sub_c
                 local_max_o = 0
                 if acc_task_list[k][l][0] == i:
                     # print("sub net", i, "acc task list", k, len(acc_task_list[k]), l)
-                    i_size = math.ceil(float(acc_task_list[k][l][1] * \
-                                             acc_task_list[k][l][3] * acc_task_list[k][l][3])/32)
-                    o_size = math.ceil(float(acc_task_list[k][l][2] * \
-                                             acc_task_list[k][l][4] * acc_task_list[k][l][4])/32)
-                    if acc_task_list[k][l][7]:
-                        o_size += math.ceil(float(acc_task_list[k][l][2] * \
-                                             acc_task_list[k][l][4] * acc_task_list[k][l][4])/32/4)
+                    i_size = math.ceil(float(acc_task_list[k][l][1] /32))*acc_task_list[k][l][3] * acc_task_list[k][l][3]
+                    print("[DEBUG] compute i_size:{} with N:{} R:{}".format(i_size,acc_task_list[k][l][1],acc_task_list[k][l][3]))
+                    o_size = math.ceil(float(acc_task_list[k][l][2] /32)) * acc_task_list[k][l][4] * acc_task_list[k][l][4]
+                    print("[DEBUG] compute o_size: M:{} R_out:{}".format(acc_task_list[k][l][2],acc_task_list[k][l][4]))
+                    if acc_task_list[k][l][7]: #if pooling (I guess we are assuming pooling 2x2, so we output 4 times less data)
+                        o_size += math.ceil(float(acc_task_list[k][l][2] /32/4)) * acc_task_list[k][l][4] * acc_task_list[k][l][4]
                     if local_max_i < i_size:
                         local_max_i = i_size
                     if local_max_o < o_size:
                         local_max_o = o_size
             if acc_task_list[k][l][0] == i:
+                print("[DEBUG] local_max_i: {} - local_max_o: {} - sizes will be doubled for buffering.".format(local_max_i,local_max_o))
                 data_i.append(local_max_i * 2)  #twiced for double buffering
                 data_i.append(local_max_o * 2)
         # print(i, pair_list[i][0][0], 1024, sub_b_num, sub_w_num, data_i)
