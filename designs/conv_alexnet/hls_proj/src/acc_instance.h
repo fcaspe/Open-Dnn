@@ -6,9 +6,7 @@
 #include "max_pool_acc_innerpp.h"
 
 using namespace std;
-//Datatypes: Interface(512) parameters(32)  input(16)  weights(16)  output(16)   Tm Tn  Tr  Tr  ?  ?  ?    ?  ?
-conv_acc<    data_type_itf, Tparam,         data_type, data_type_w, data_type_o, 96, 3, 11, 11, 5, 5, 32, 32, 32> convAcc0;
-
+conv_acc< data_type_itf, Tparam, data_type, data_type_w, data_type_o, 96, 3, 11, 11, 5, 5, 32, 32, 32> convAcc0;
 
 void conv_layer_acc_0(
 		Tparam N,
@@ -60,7 +58,7 @@ void conv_layer_acc_1(
 	    convAcc1.conv_layer_acc_mbuf(N, K, M, R_IN, C_IN, C_OUT, R_OUT, S, P, act, inport, weight_offset, bias_offset, in_offset, out_offset, i_weight, i_data, out_data);
 	};
 
-conv_acc< data_type_itf, Tparam, data_type, data_type_w, data_type_o, 55, 13, 13, 13, 5, 5, 32, 32, 32> convAcc2;
+conv_acc< data_type_itf, Tparam, data_type, data_type_w, data_type_o, 96, 19, 13, 13, 5, 5, 32, 32, 32> convAcc2;
 
 void conv_layer_acc_2(
 		Tparam N,
@@ -112,7 +110,7 @@ void conv_layer_acc_3(
 	    convAcc3.conv_layer_acc_mbuf(N, K, M, R_IN, C_IN, C_OUT, R_OUT, S, P, act, inport, weight_offset, bias_offset, in_offset, out_offset, i_weight, i_data, out_data);
 	};
 
-conv_acc< data_type_itf, Tparam, data_type, data_type_w, data_type_o, 256, 5, 13, 13, 5, 5, 32, 32, 32> convAcc4;
+conv_acc< data_type_itf, Tparam, data_type, data_type_w, data_type_o, 64, 11, 13, 13, 5, 5, 32, 32, 32> convAcc4;
 
 void conv_layer_acc_4(
 		Tparam N,
@@ -136,32 +134,6 @@ void conv_layer_acc_4(
 		data_type_itf* out_data
 	){
 	    convAcc4.conv_layer_acc_mbuf(N, K, M, R_IN, C_IN, C_OUT, R_OUT, S, P, act, inport, weight_offset, bias_offset, in_offset, out_offset, i_weight, i_data, out_data);
-	};
-
-conv_acc< data_type_itf, Tparam, data_type, data_type_w, data_type_o, 512, 1, 1, 1, 5, 5, 32, 32, 32> convAcc5;
-
-void conv_layer_acc_5(
-		Tparam N,
-		Tparam K,
-		Tparam M,
-		Tparam R_IN,
-		Tparam C_IN,
-		Tparam C_OUT,
-		Tparam R_OUT,
-		Tparam S,
-		Tparam P,
-		Tparam act,
-		Tparam inport,
-		Tparam weight_offset,
-		Tparam bias_offset,
-		Tparam in_offset,
-		Tparam out_offset,
-		//ap_fixed<32,26>* layer_bias,
-		data_type_itf* i_weight,
-		data_type_itf* i_data,
-		data_type_itf* out_data
-	){
-	    convAcc5.conv_layer_acc_mbuf(N, K, M, R_IN, C_IN, C_OUT, R_OUT, S, P, act, inport, weight_offset, bias_offset, in_offset, out_offset, i_weight, i_data, out_data);
 	};
 
 max_pool_acc< data_type_itf, Tparam, data_type, data_type_w, data_type_o, 32, 16, 16, 2, 3> maxPoolAcc0;
@@ -240,10 +212,10 @@ void conv_pool_acc_0(
 	    	layer_num_local[ll] = param_port[ll];
 	    }
 
-	    cout << "LAYER ACC: CONV Loading layer number for current accelerator ..." << endl;
-	    cout << "LAYRE ACC: CONV will process "<< layer_num_local[0] << " layers" <<endl;
+	    cout << "LAYER ACC0: CONV Loading layer number for current accelerator ..." << endl;
+	    cout << "LAYRE ACC0: CONV will process "<< layer_num_local[0] << " layers" <<endl;
 	    for (unsigned int l = 0; l < layer_num_local[0]; l++) {
-	    	cout << "LAYER ACC: CONV Processing " << l << "th layer ..." << endl;
+	    	cout << "LAYER ACC0: CONV Processing " << l << "th layer ..." << endl;
 	        for (unsigned int i = 0; i < 16; i++)
 	        {
 	            param_conv_local[i] = param_port[16 + l*16 + i];
@@ -251,7 +223,7 @@ void conv_pool_acc_0(
 	        }
 	        if (param_pool_local[15] == 0)
 	        {
-	            cout << "LAYER ACC: Execute conv layer without pool, enable_pool =  " << param_pool_local[15] << endl;
+	            cout << "LAYER ACC0: Execute conv layer without pool, enable_pool =  " << param_pool_local[15] << endl;
 	            conv_layer_acc_0(param_conv_local[0], // N
 	                         param_conv_local[1], // K
 	                         param_conv_local[2], // M
@@ -274,7 +246,7 @@ void conv_pool_acc_0(
 	        }
 	        else
 	        {
-	            cout << "LAYER ACC: POOL Execute pool layer with pooling enable: " << param_pool_local[15] << endl;
+	            cout << "LAYER ACC0: POOL Execute pool layer with pooling enable: " << param_pool_local[15] << endl;
 	            max_pool_layer_acc_0(param_pool_local[0], // R_in,
 	                           param_pool_local[1], // C_in
 	                           param_pool_local[2], // N
@@ -311,10 +283,10 @@ void conv_pool_acc_1(
 	    	layer_num_local[ll] = param_port[ll];
 	    }
 
-	    cout << "LAYER ACC: CONV Loading layer number for current accelerator ..." << endl;
-	    cout << "LAYRE ACC: CONV will process "<< layer_num_local[0] << " layers" <<endl;
+	    cout << "LAYER ACC1: CONV Loading layer number for current accelerator ..." << endl;
+	    cout << "LAYRE ACC1: CONV will process "<< layer_num_local[0] << " layers" <<endl;
 	    for (unsigned int l = 0; l < layer_num_local[0]; l++) {
-	    	cout << "LAYER ACC: CONV Processing " << l << "th layer ..." << endl;
+	    	cout << "LAYER ACC1: CONV Processing " << l << "th layer ..." << endl;
 	        for (unsigned int i = 0; i < 16; i++)
 	        {
 	            param_conv_local[i] = param_port[16 + l*16 + i];
@@ -322,7 +294,7 @@ void conv_pool_acc_1(
 	        }
 	        if (param_pool_local[15] == 0)
 	        {
-	            cout << "LAYER ACC: Execute conv layer without pool, enable_pool =  " << param_pool_local[15] << endl;
+	            cout << "LAYER ACC1: Execute conv layer without pool, enable_pool =  " << param_pool_local[15] << endl;
 	            conv_layer_acc_1(param_conv_local[0], // N
 	                         param_conv_local[1], // K
 	                         param_conv_local[2], // M
@@ -345,7 +317,7 @@ void conv_pool_acc_1(
 	        }
 	        else
 	        {
-	            cout << "LAYER ACC: POOL Execute pool layer with pooling enable: " << param_pool_local[15] << endl;
+	            cout << "LAYER ACC1: POOL Execute pool layer with pooling enable: " << param_pool_local[15] << endl;
 	            max_pool_layer_acc_1(param_pool_local[0], // R_in,
 	                           param_pool_local[1], // C_in
 	                           param_pool_local[2], // N
@@ -541,59 +513,5 @@ void conv_pool_acc_4(
 	        }
 	    }
 	};
-
-
-
-void conv_pool_acc_5(
-	Tparam* param_port,
-	//ap_fixed<32,26>* bias_in,
-	data_type_itf* weight_in,
-	data_type_itf* data_in,
-	data_type_itf* data_out
-	   )
-	{
-	    Tparam layer_num_local[16];
-	    Tparam param_conv_local[16];
-	    Tparam param_pool_local[16];
-
-	    for (unsigned int ll = 0; ll < 16; ll++)
-	    {
-	    	layer_num_local[ll] = param_port[ll];
-	    }
-
-	    cout << "LAYER ACC: CONV Loading layer number for current accelerator ..." << endl;
-	    cout << "LAYRE ACC: CONV will process "<< layer_num_local[0] << " layers" <<endl;
-	    for (unsigned int l = 0; l < layer_num_local[0]; l++) {
-	    	cout << "LAYER ACC: CONV Processing " << l << "th layer ..." << endl;
-	        for (unsigned int i = 0; i < 16; i++)
-	        {
-	            param_conv_local[i] = param_port[16 + l*16 + i];
-	            param_pool_local[i] = param_port[16 + 256 + l*16 + i];
-	        }
-	        if (param_pool_local[15] == 0)
-	        {
-	            cout << "LAYER ACC: Execute conv layer without pool, enable_pool =  " << param_pool_local[15] << endl;
-	            conv_layer_acc_5(param_conv_local[0], // N
-	                         param_conv_local[1], // K
-	                         param_conv_local[2], // M
-	                         param_conv_local[3], // Rin
-	                         param_conv_local[4], // C
-	                         param_conv_local[5], // R
-	                         param_conv_local[6], // C
-	                         param_conv_local[7], // S
-	                         param_conv_local[8], // P
-	                         param_conv_local[9], // act
-	                         param_conv_local[14], //inport
-	                         param_conv_local[10], // w_offset
-	                         param_conv_local[11], // b_offset
-	                         param_conv_local[12], // in_offset
-	                         param_conv_local[13], // out_offset
-	                         //bias_in,
-	                         weight_in,
-	                         data_in,
-	                         data_out);
-	        }
-	        }
-	        }
 
 #endif

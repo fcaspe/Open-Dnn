@@ -742,10 +742,12 @@ proc create_and_assign_pblocks { design_name } {
   add_cells_to_pblock pblock_slr1 [get_cells [list ${design_name}_i/sub_net_0_1]] -clear_locs
   add_cells_to_pblock pblock_slr1 [get_cells [list ${design_name}_i/blk_mem_gen_2]] -clear_locs
   add_cells_to_pblock pblock_slr1 [get_cells [list ${design_name}_i/blk_mem_gen_3]] -clear_locs
+  add_cells_to_pblock pblock_slr1 [get_cells [list ${design_name}_i/xdma_0]] -clear_locs
 
   add_cells_to_pblock pblock_slr2 [get_cells [list ${design_name}_i/sub_net_0_2]] -clear_locs
   add_cells_to_pblock pblock_slr2 [get_cells [list ${design_name}_i/blk_mem_gen_4]] -clear_locs
   add_cells_to_pblock pblock_slr2 [get_cells [list ${design_name}_i/blk_mem_gen_5]] -clear_locs
+  add_cells_to_pblock pblock_slr2 [get_cells [list ${design_name}_i/ddr4_0]] -clear_locs
 
 }
 
@@ -753,7 +755,7 @@ proc create_and_assign_pblocks { design_name } {
 # MAIN FLOW
 ##################################################################
 set num_threads 32
-add_cells_to_pblock pblock_slr0 [get_cells [list ${design_name}_i/blk_mem_gen_0]] -clear_locs
+
 create_root_design ""
 
 make_wrapper -files \

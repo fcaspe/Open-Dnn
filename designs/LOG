@@ -6,4 +6,76 @@ to the published by the paper. (just the first accelerator is different.)
 It fails routing, so we have only synthesis reports. It utilizes 90% of DSPs.
 
 alexnet_v4: Same design as v3, but it implements correctly, as we instantiate
-pblocks on each die to assign it to each subnet.
+pblocks on each die to assign it to each subnet. (-1.1ns WNS)
+
+  add_cells_to_pblock pblock_slr0 [get_cells [list ${design_name}_i/sub_net_0_0]] -clear_locs
+  add_cells_to_pblock pblock_slr0 [get_cells [list ${design_name}_i/blk_mem_gen_0]] -clear_locs
+  add_cells_to_pblock pblock_slr0 [get_cells [list ${design_name}_i/blk_mem_gen_1]] -clear_locs
+
+  add_cells_to_pblock pblock_slr1 [get_cells [list ${design_name}_i/sub_net_0_1]] -clear_locs
+  add_cells_to_pblock pblock_slr1 [get_cells [list ${design_name}_i/blk_mem_gen_2]] -clear_locs
+  add_cells_to_pblock pblock_slr1 [get_cells [list ${design_name}_i/blk_mem_gen_3]] -clear_locs
+
+  add_cells_to_pblock pblock_slr2 [get_cells [list ${design_name}_i/sub_net_0_2]] -clear_locs
+  add_cells_to_pblock pblock_slr2 [get_cells [list ${design_name}_i/blk_mem_gen_4]] -clear_locs
+  add_cells_to_pblock pblock_slr2 [get_cells [list ${design_name}_i/blk_mem_gen_5]] -clear_locs
+  
+  
+alexnet_v4_2: Same as v4, but as we saw in previous design, the failing timing lines were associated with PCIe interface.
+So, we force the xdma which contains the pcie interface, to be in the subnet that has the PCIe I/O (SLR2)
+
+
+  add_cells_to_pblock pblock_slr0 [get_cells [list ${design_name}_i/sub_net_0_0]] -clear_locs
+  add_cells_to_pblock pblock_slr0 [get_cells [list ${design_name}_i/blk_mem_gen_0]] -clear_locs
+  add_cells_to_pblock pblock_slr0 [get_cells [list ${design_name}_i/blk_mem_gen_1]] -clear_locs
+
+  add_cells_to_pblock pblock_slr1 [get_cells [list ${design_name}_i/sub_net_0_1]] -clear_locs
+  add_cells_to_pblock pblock_slr1 [get_cells [list ${design_name}_i/blk_mem_gen_2]] -clear_locs
+  add_cells_to_pblock pblock_slr1 [get_cells [list ${design_name}_i/blk_mem_gen_3]] -clear_locs
+  add_cells_to_pblock pblock_slr1 [get_cells [list ${design_name}_i/xdma_0]] -clear_locs
+
+  add_cells_to_pblock pblock_slr2 [get_cells [list ${design_name}_i/sub_net_0_2]] -clear_locs
+  add_cells_to_pblock pblock_slr2 [get_cells [list ${design_name}_i/blk_mem_gen_4]] -clear_locs
+  add_cells_to_pblock pblock_slr2 [get_cells [list ${design_name}_i/blk_mem_gen_5]] -clear_locs
+  add_cells_to_pblock pblock_slr2 [get_cells [list ${design_name}_i/ddr4_0]] -clear_locs
+
+The timing failure is even bigger.
+
+
+
+alexnet_v5
+
+
+When constructing the sub_nets in python:
+        the biggest input and output sizes of the accelerators is taken in the AXI ports.
+        A double buffering technique is employed, so for example, for sub_net_0, input is (227*227*3) pixels = 154587 pixels.
+        Inputs are always 16 bits, and interface is 512 bits. (32 elements per read)
+        ie: ceil(154587/32) * 2 (due to double buffering) = 9662
+        This is most probably to load data while another part it is being read.
+        Same with output size
+
+        For weights:
+            for each accelerator in sub_net:
+                size += ceil(M*N*K*K / 32)
+
+
+In HLS:
+        Size calculation does not correspond with the way data is read from axi port.
+        INPUT data is packed across the N dimension in 32 units of 16 bit each. So, the correct calculation should be:
+        ceil(N/32)*R*C*2 //2 for double buffering
+        OUTPUT data is packed across the M dimension in 32 units of 16 bit each. So, the correct calculation should be:
+        ceil(M/32)*R*C*2 //2 for double buffering
+        WEIGHT data is packed across the M dimension in 32 units of 16 bit each. So, the correct calculation should be:
+        ceil(M/32)*N*K*K
+
+Modified HLS to reflect in this change and synthesized with overlapping PBLOCKS to add the central axi_interconnect_3 in another pblock. Design does not fit the assigned PBLOCKS
+Size of interface ports (array inputs or outputs) should not affect caching. Caching is done explicitely when we create the buffers inside the modules and copy data from them.
+
+conv_alexnet
+
+    Found another error during network generation.
+    in "acc_instance.h" all the netorks are defined (conv_layer_acc_0, conv_layer_acc_1, conv_layer_acc_2 ...) with their selected tile sizes , but in construct_net.h, 
+    the subnets are only constructed with conv_layer_acc_0 and conv_layer_acc_1.
+    alexnet_v2 fitted and closed timing only because we instantiate in SL1 the conv_layer_acc_0 only, hence not occupying all the routing logic, as it happens in the other designs.
+    Let's synthesize only this two accelerators. so that we can produce faster turnaround test times.
+    

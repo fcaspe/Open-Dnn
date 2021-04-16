@@ -80,7 +80,7 @@ def multiAcc_dse():
     """
     step 1: extract model from txt file with parameter no_include_fc / include_fc
     """
-    conv_N, conv_M, conv_r, conv_R, conv_K, conv_S, conv_G, flag, cut_flag, pool_N = model_extract('include_fc')
+    conv_N, conv_M, conv_r, conv_R, conv_K, conv_S, conv_G, flag, cut_flag, pool_N = model_extract('no_include_fc')
     print("Extracted cut flag: ", cut_flag)
     print("Extracted pool flag:", flag)
     OPs = gop_calculate(conv_N, conv_M, conv_R, conv_K)
