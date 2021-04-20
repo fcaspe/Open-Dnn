@@ -34,6 +34,7 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 # START
 ################################################################
 set proj_path "./myproj"
+set ip_lib "./myproj/ip_lib"
 set proj_name cloud_dnn
 # To test this script, run the following commands from Vivado Tcl console:
 # source design_1_script.tcl
@@ -134,8 +135,6 @@ set bCheckIPsPassed 1
 # Update IP repository with generated IP
 set ip_sub_net_0 "../../hls_proj/ip_gen/sub_net_0/impl/ip/xilinx_com_hls_sub_net_0_1_0.zip"
 
-set ip_lib "./myproj/ip_lib"
-
 file mkdir $ip_lib
 set_property ip_repo_paths $ip_lib [current_project]
 update_ip_catalog
@@ -225,10 +224,10 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
    CONFIG.FREQ_HZ {100000000} \
    ] $ddr4_sys_clk_1
-  set refclk_100 [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 refclk_100 ]
-  set_property -dict [ list \
-   CONFIG.FREQ_HZ {100000000} \
-   ] $refclk_100
+  #set refclk_100 [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 refclk_100 ]
+  #set_property -dict [ list \
+  # CONFIG.FREQ_HZ {100000000} \
+  # ] $refclk_100
 
   set pci_express_x16 [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:pcie_7x_mgt_rtl:1.0 pci_express_x16 ]
   
@@ -236,14 +235,16 @@ proc create_root_design { parentCell } {
   #set_property -dict [ list \
   # CONFIG.FREQ_HZ {100000000} \
   # ] $pcie_refclk
-  #set sys_clk [ create_bd_port -dir I -type clk sys_clk ]
-  #set_property -dict [ list \
-  # CONFIG.FREQ_HZ {100000000} \
- #] $sys_clk
- # set sys_clk_gt [ create_bd_port -dir I -type clk sys_clk_gt ]
- # set_property -dict [ list \
- #  CONFIG.FREQ_HZ {100000000} \
- #] $sys_clk_gt
+  
+  set sys_clkn [ create_bd_port -dir I -type clk sys_clkn ]
+  set_property -dict [ list \
+   CONFIG.FREQ_HZ {100000000} \
+ ] $sys_clkn
+ 
+ set sys_clkp [ create_bd_port -dir I -type clk sys_clkp ]
+ set_property -dict [ list \
+  CONFIG.FREQ_HZ {100000000} \
+ ] $sys_clkp
 
   # Create ports
  # set pcie_perstn [ create_bd_port -dir I -type rst pcie_perstn ]
@@ -419,7 +420,6 @@ proc create_root_design { parentCell } {
  ] $smartconnect_3
 
 
-
   # Create instance: sub_net_0_0, and set properties
   set sub_net_0_0 [ create_bd_cell -type ip -vlnv xilinx.com:hls:sub_net_0:1.0 sub_net_0_0 ]
 
@@ -529,7 +529,8 @@ proc create_root_design { parentCell } {
   #connect_bd_intf_net -intf_net ddr4_0_C0_DDR4 [get_bd_intf_ports ddr4_sdram_c1] [get_bd_intf_pins ddr4_0/C0_DDR4]
   connect_bd_intf_net -intf_net ddr4_0_C0_DDR4 [get_bd_intf_ports m0_ddr4] [get_bd_intf_pins ddr4_0/C0_DDR4]
   connect_bd_intf_net -intf_net default_100mhz_clk1_1 [get_bd_intf_ports ddr4_sys_clk_1] [get_bd_intf_pins ddr4_0/C0_SYS_CLK]
-  connect_bd_intf_net -intf_net refclk_100_1 [get_bd_intf_ports refclk_100] [get_bd_intf_pins util_ds_buf/CLK_IN_D]
+  connect_bd_net [get_bd_ports sys_clkp] [get_bd_pins util_ds_buf/IBUF_DS_P]
+  connect_bd_net [get_bd_ports sys_clkn] [get_bd_pins util_ds_buf/IBUF_DS_N]
   
   
   connect_bd_intf_net -intf_net smartconnect_0_M00_AXI [get_bd_intf_pins axi_register_slice_0/S_AXI] [get_bd_intf_pins smartconnect_0/M00_AXI]

@@ -10,9 +10,9 @@ set_property BITSTREAM.CONFIG.SPI_FALL_EDGE YES [current_design]
 set_property PACKAGE_PIN AR26 [get_ports reset_rtl_0]
 set_property IOSTANDARD LVCMOS12 [get_ports reset_rtl_0]
 set_property PULLUP true [get_ports reset_rtl_0]
-set_property PACKAGE_PIN AT10 [get_ports {refclk_100_clk_n}]
+set_property PACKAGE_PIN AT10 [get_ports {sys_clkn}]
 
-create_clock -period 10.000 -name refclk_100 [get_ports refclk_100_clk_p]
+create_clock -period 10.000 -name refclk_100 [get_ports sys_clkp]
 set_clock_groups -group [get_clocks refclk_100 -include_generated_clocks] -asynchronous
 
 
